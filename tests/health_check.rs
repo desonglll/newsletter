@@ -87,11 +87,6 @@ pub async fn configure_database(config: &DatabaseSettings) -> PgPool {
 #[tokio::test]
 async fn subscribe_returns_a_200_for_valid_form_data() {
     let app: TestApp = spawn_app().await;
-    let configuration = get_configuration().expect("Failed to read configuration");
-    let connection_string = configuration.database.connection_string();
-    let mut connection = PgConnection::connect(&connection_string.expose_secret())
-        .await
-        .expect("Failed to connect to Postgres");
 
     let client = reqwest::Client::builder()
         .no_proxy()
@@ -110,24 +105,11 @@ async fn subscribe_returns_a_200_for_valid_form_data() {
     assert_eq!(200, response.status().as_u16());
 
     let saved = sqlx::query!("SELECT email, name FROM subscriptions",)
-        .fetch_one(&mut connection)
+        .fetch_one(&app.db_pool)
         .await
         .expect("Failed to fetch saved subscription");
     assert_eq!(saved.email, "ursula_le_guin@gmail.com");
     assert_eq!(saved.name, "le guin");
-    // Consider WHETHER you need to drop a testing database.
-    // The following command will failed by `database \"4c93ebad-786a-44be-86e3-7a9476d2f4a3\" is being accessed by other users`.
-    // Need to solve that.
-    // connection
-    //     .execute(
-    //         format!(
-    //             r#"DROP DATABASE "{}";"#,
-    //             app.settings.database.database_name
-    //         )
-    //         .as_str(),
-    //     )
-    //     .await
-    //     .expect("Failed to delete database");
 }
 
 #[tokio::test]
