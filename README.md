@@ -13,5 +13,6 @@ brew link --force libpq
 ## Install sqlx-cli
 
 ```shell
-cargo install sqlx-cli --no-default-features --features native-tls,postgres
+cargo install --version=^0.6 sqlx-cli --no-default-features --features native-tls,postgres
+# cargo install sqlx-cli --no-default-features --features native-tls,postgres
 ```
