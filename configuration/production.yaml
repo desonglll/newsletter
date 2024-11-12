@@ -1,2 +1,14 @@
 application:
   host: 0.0.0.0
+
+database:
+  host: "127.0.0.1"
+  port: 5432
+  username: "postgres"
+  password: "password"
+  database_name: "newsletter"
+
+email_client:
+  base_url: "https://api.postmarkapp.com"
+  sender_email: "something@gmail.com"
+  authorization_token: "ecceebde-ab28-4472-b5ef-80db55c9e587"
