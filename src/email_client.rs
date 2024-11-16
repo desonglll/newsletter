@@ -43,7 +43,7 @@ impl EmailClient {
             html_body: html_content,
             text_body: text_content,
         };
-        let builder = self
+        let _builder = self
             .http_client
             .post(&url)
             .header(
@@ -191,5 +191,40 @@ mod tests {
             .send_email(subscriber_email, &subject, &content, &content)
             .await;
         assert_err!(outcome);
+    }
+
+    fn subject() -> String {
+        Sentence(1..2).fake()
+    }
+
+    fn content() -> String {
+        Paragraph(1..10).fake()
+    }
+
+    fn email() -> SubscriberEmail {
+        SubscriberEmail::parse(SafeEmail().fake()).unwrap()
+    }
+
+    fn email_client(base_url: String) -> EmailClient {
+        EmailClient::new(base_url, email(), Secret::new(Faker.fake()))
+    }
+
+    #[tokio::test]
+    async fn send_email_sends_the_expected_request() {
+        let mock_server = MockServer::start().await;
+        let email_client = email_client(mock_server.uri());
+        Mock::given(header_exists("X-Postmark-Server-Token"))
+            .and(header("Content-Type", "application/json"))
+            .and(path("/email"))
+            .and(method("POST"))
+            .and(SendEmailBodtMatcher)
+            .respond_with(ResponseTemplate::new(200))
+            .expect(1)
+            .mount(&mock_server)
+            .await;
+
+        let _ = email_client
+            .send_email(email(), &subject(), &content(), &content())
+            .await;
     }
 }

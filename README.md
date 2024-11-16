@@ -17,6 +17,12 @@ cargo install --version=^0.6 sqlx-cli --no-default-features --features native-tl
 # cargo install sqlx-cli --no-default-features --features native-tls,postgres
 ```
 
+## Database initialization
+
+```shell
+./scripts/init_db.sh
+```
+
 ## Docker build
 
 ```shell
