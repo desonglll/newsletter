@@ -12,7 +12,6 @@ use crate::{
     email_client::EmailClient,
     routes::{health_check, subscribe},
 };
-
 pub struct Application {
     port: u16,
     server: Server,
@@ -72,7 +71,7 @@ pub fn run(
             .app_data(db_pool.clone())
             .app_data(email_client.clone())
     })
-    .listen(listener)?
-    .run();
+        .listen(listener)?
+        .run();
     Ok(server)
 }
