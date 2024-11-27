@@ -12,6 +12,8 @@ use crate::{
     email_client::EmailClient,
     routes::{health_check, subscribe},
 };
+use crate::routes::confirm;
+
 pub struct Application {
     port: u16,
     server: Server,
@@ -68,6 +70,7 @@ pub fn run(
             .wrap(TracingLogger::default())
             .route("/health_check", web::get().to(health_check))
             .route("/subscriptions", web::post().to(subscribe))
+            .route("/subscriptions/confirm", web::get().to(confirm))
             .app_data(db_pool.clone())
             .app_data(email_client.clone())
     })
