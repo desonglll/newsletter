@@ -33,6 +33,8 @@ claim = "0.5"
 validator = "0.14"
 serde-aux = "3"
 rand = {version="0.8", features = ["std_rng"]}
+anyhow = "1.0.93"
+thiserror = "1.0.68"
 
 [dependencies.sqlx]
 version = "0.6"
