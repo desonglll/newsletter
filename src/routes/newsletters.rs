@@ -8,6 +8,7 @@ use sqlx::PgPool;
 use crate::domain::SubscriberEmail;
 use crate::email_client::EmailClient;
 use crate::routes::error_chain_fmt;
+use crate::telemetry::spawn_blocking_with_tracing;
 
 #[derive(serde::Deserialize)]
 pub struct BodyData {
@@ -209,11 +210,11 @@ async fn validate_credentials(
 ) -> Result<uuid::Uuid, PublishError> {
     let (user_id, expected_password_hash) = get_stored_credentials(
         &credentials.username,
-        &pool,
+        pool,
     ).await.map_err(PublishError::UnexpectedError)?.ok_or_else(|| PublishError::AuthError(anyhow::anyhow!("Unknown username")))?;
 
 
-    tokio::task::spawn_blocking(move || {
+    spawn_blocking_with_tracing(move || {
         verify_password_hash(expected_password_hash, credentials.password)
     })
         .await
