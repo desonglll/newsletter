@@ -6,7 +6,7 @@ database:
   database_name: "newsletter"
 
 application:
-  port: 8000
+  port: 8001
   host: 127.0.0.1
 
 email_client:

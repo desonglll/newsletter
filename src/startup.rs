@@ -7,7 +7,7 @@ use sqlx::{postgres::PgPoolOptions, PgPool};
 use std::net::TcpListener;
 use tracing_actix_web::TracingLogger;
 
-use crate::routes::{confirm, publish_newsletter};
+use crate::routes::{confirm, home, publish_newsletter};
 use crate::{
     configuration::{DatabaseSettings, Settings},
     email_client::EmailClient,
@@ -77,6 +77,7 @@ pub fn run(
     let server = HttpServer::new(move || {
         App::new()
             .wrap(TracingLogger::default())
+            .route("/", web::get().to(home))
             .route("/newsletters", web::post().to(publish_newsletter))
             .route("/health_check", web::get().to(health_check))
             .route("/subscriptions", web::post().to(subscribe))
