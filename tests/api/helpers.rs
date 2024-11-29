@@ -1,4 +1,4 @@
-use argon2::{Argon2, PasswordHasher};
+use argon2::{Algorithm, Argon2, Params, PasswordHasher, Version};
 use argon2::password_hash::SaltString;
 use newsletter::{
     configuration::{get_configuration, DatabaseSettings},
@@ -27,7 +27,7 @@ pub struct TestApp {
     pub db_pool: PgPool,
     pub email_server: MockServer,
     pub port: u16,
-    test_user: TestUser,
+    pub(crate) test_user: TestUser,
 }
 pub struct ConfirmationLinks {
     pub html: reqwest::Url,
@@ -39,7 +39,7 @@ impl TestApp {
             .no_proxy()
             .build()
             .expect("Failed to build reqwest")
-            .post(&format!("{}/subscriptions", &self.address))
+            .post(format!("{}/subscriptions", &self.address))
             .header("Content-Type", "application/x-www-form-urlencoded")
             .body(body)
             .send()
@@ -48,7 +48,7 @@ impl TestApp {
     }
     pub async fn post_newsletters(&self, body: serde_json::Value) -> reqwest::Response {
         reqwest::Client::new()
-            .post(&format!("{}/newsletters", &self.address))
+            .post(format!("{}/newsletters", &self.address))
             .basic_auth(&self.test_user.username, Some(&self.test_user.password))
             .json(&body)
             .send()
@@ -98,6 +98,7 @@ pub async fn spawn_app() -> TestApp {
 
     let application_port = application.port();
     let address = format!("http://127.0.0.1:{}", application.port());
+    #[allow(clippy::let_underscore_future)]
     let _ = tokio::spawn(application.run_until_stopped());
     let test_app = TestApp {
         address,
@@ -151,11 +152,14 @@ impl TestUser {
     async fn store(&self, pool: &PgPool) {
         let salt = SaltString::generate(&mut rand::thread_rng());
         // Match production parameters
-        let password_hash = Argon2::default()
+        let password_hash = Argon2::new(
+            Algorithm::Argon2id,
+            Version::V0x13,
+            Params::new(15000, 2, 1, None).unwrap(),
+        )
             .hash_password(self.password.as_bytes(), &salt)
             .unwrap()
             .to_string();
-
         sqlx::query!(
             "INSERT INTO users (user_id, username, password_hash)
             VALUES ($1, $2, $3)",
