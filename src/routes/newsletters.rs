@@ -20,6 +20,7 @@ pub struct Content {
     html: String,
     text: String,
 }
+
 #[derive(thiserror::Error)]
 pub enum PublishError {
     #[error("Authentication failed")]
