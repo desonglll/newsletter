@@ -8,6 +8,7 @@ database:
 application:
   port: 8001
   host: 127.0.0.1
+  hmac_secret: "super-long-and-secret-random-key-needed-to-verify-message-integrity"
 
 email_client:
   base_url: "localhost"
