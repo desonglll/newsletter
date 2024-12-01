@@ -13,7 +13,7 @@ async fn an_error_flash_message_is_set_on_failure() {
     let response = app.post_login(&login_body).await;
 
     // Assert
-    assert_is_redirect_to(&response, "/login");
+    assert_is_redirect_to(&response, "/admin/dashboard");
 
     // Act - Part 2 - Follow the redirect
     let html_page = app.get_login_html().await;

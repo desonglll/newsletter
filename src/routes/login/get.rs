@@ -1,10 +1,10 @@
-use std::fmt::Write;
+use crate::startup::HmacSecret;
 use actix_web::http::header::ContentType;
-use actix_web::{HttpResponse};
+use actix_web::HttpResponse;
 use actix_web_flash_messages::{IncomingFlashMessages, Level};
 use hmac::{Hmac, Mac};
 use secrecy::ExposeSecret;
-use crate::startup::HmacSecret;
+use std::fmt::Write;
 
 #[derive(serde::Deserialize)]
 pub struct QueryParams {
