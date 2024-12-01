@@ -34,6 +34,20 @@ pub struct ConfirmationLinks {
     pub plain_text: reqwest::Url,
 }
 impl TestApp {
+    pub async fn post_login<Body>(&self, body: &Body) -> reqwest::Response
+    where
+        Body: serde::Serialize,
+    {
+        reqwest::Client::builder()
+            .redirect(reqwest::redirect::Policy::none())
+            .build()
+            .unwrap()
+            .post(&format!("{}/login", self.address))
+            .form(body)
+            .send()
+            .await
+            .expect("Failed to execute request")
+    }
     pub async fn post_subscriptions(&self, body: String) -> reqwest::Response {
         reqwest::Client::builder()
             .no_proxy()
@@ -157,9 +171,9 @@ impl TestUser {
             Version::V0x13,
             Params::new(15000, 2, 1, None).unwrap(),
         )
-        .hash_password(self.password.as_bytes(), &salt)
-        .unwrap()
-        .to_string();
+            .hash_password(self.password.as_bytes(), &salt)
+            .unwrap()
+            .to_string();
         sqlx::query!(
             "INSERT INTO users (user_id, username, password_hash)
             VALUES ($1, $2, $3)",
@@ -167,8 +181,12 @@ impl TestUser {
             self.username,
             password_hash,
         )
-        .execute(pool)
-        .await
-        .expect("Failed to store test user.");
+            .execute(pool)
+            .await
+            .expect("Failed to store test user.");
     }
+}
+pub fn assert_is_redirect_to(response: &reqwest::Response, location: &str) {
+    assert_eq!(response.status().as_u16(), 303);
+    assert_eq!(response.headers().get("Location").unwrap(), location);
 }
