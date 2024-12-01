@@ -1,5 +1,6 @@
 use actix_web::http::header::ContentType;
 use actix_web::{HttpRequest, HttpResponse};
+use actix_web::cookie::Cookie;
 use hmac::{Hmac, Mac};
 use secrecy::ExposeSecret;
 use crate::startup::HmacSecret;
@@ -31,7 +32,7 @@ pub async fn login_form(request: HttpRequest) -> HttpResponse {
             format!("<p><i>{}</i></p>", cookie.value())
         }
     };
-    HttpResponse::Ok()
+    let mut response = HttpResponse::Ok()
         .content_type(ContentType::html())
         .body(format!(r#"<!DOCTYPE html>
 <html lang="en">
@@ -59,5 +60,9 @@ pub async fn login_form(request: HttpRequest) -> HttpResponse {
         <button type="submit">Login</button>
     </form>
 </body>
-</html>"#, ))
+</html>"#, ));
+    response
+        .add_removal_cookie(&Cookie::new("_flash", ""))
+        .unwrap();
+    response
 }
