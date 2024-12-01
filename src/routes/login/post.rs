@@ -1,12 +1,12 @@
-use actix_web::http::header::LOCATION;
-use actix_web::{web, HttpResponse};
-use actix_web::cookie::Cookie;
-use actix_web::error::InternalError;
-use actix_web_flash_messages::FlashMessage;
-use secrecy::{Secret};
-use sqlx::PgPool;
 use crate::authentication::{validate_credentials, AuthError, Credentials};
 use crate::routes::error_chain_fmt;
+use actix_web::cookie::Cookie;
+use actix_web::error::InternalError;
+use actix_web::http::header::LOCATION;
+use actix_web::{web, HttpResponse};
+use actix_web_flash_messages::FlashMessage;
+use secrecy::Secret;
+use sqlx::PgPool;
 
 #[derive(serde::Deserialize)]
 pub struct FormData {
@@ -31,18 +31,20 @@ pub async fn login(
     match validate_credentials(credentials, &pool).await {
         Ok(user_id) => {
             tracing::Span::current().record("user_id", tracing::field::display(&user_id));
-            Ok(HttpResponse::SeeOther().insert_header((LOCATION, "/")).finish())
+            Ok(HttpResponse::SeeOther()
+                .insert_header((LOCATION, "/"))
+                .finish())
         }
         Err(e) => {
             let e = match e {
-                AuthError::InvalidCredentials(_) => { LoginError::AuthError(e.into()) }
-                AuthError::UnexpectedError(_) => { LoginError::UnexpectedError(e.into()) }
+                AuthError::InvalidCredentials(_) => LoginError::AuthError(e.into()),
+                AuthError::UnexpectedError(_) => LoginError::UnexpectedError(e.into()),
             };
-           
+
             FlashMessage::error(e.to_string()).send();
 
             let response = HttpResponse::SeeOther()
-                .insert_header((LOCATION, "/login"))
+                .insert_header((LOCATION, "/admin/dashboard"))
                 .cookie(Cookie::new("_flash", e.to_string()))
                 .finish();
             Err(InternalError::from_response(e, response))
@@ -62,4 +64,3 @@ impl std::fmt::Debug for LoginError {
         error_chain_fmt(self, f)
     }
 }
-

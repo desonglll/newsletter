@@ -35,6 +35,16 @@ pub struct ConfirmationLinks {
     pub plain_text: reqwest::Url,
 }
 impl TestApp {
+    pub async fn get_login_dashboard(&self) -> String {
+        self.api_client
+            .get(format!("{}/admin/dashboard", self.address))
+            .send()
+            .await
+            .expect("Failed to execute request.")
+            .text()
+            .await
+            .unwrap()
+    }
     pub async fn get_login_html(&self) -> String {
         self.api_client
             .get(format!("{}/login", &self.address))
@@ -184,9 +194,9 @@ impl TestUser {
             Version::V0x13,
             Params::new(15000, 2, 1, None).unwrap(),
         )
-            .hash_password(self.password.as_bytes(), &salt)
-            .unwrap()
-            .to_string();
+        .hash_password(self.password.as_bytes(), &salt)
+        .unwrap()
+        .to_string();
         sqlx::query!(
             "INSERT INTO users (user_id, username, password_hash)
             VALUES ($1, $2, $3)",
@@ -194,9 +204,9 @@ impl TestUser {
             self.username,
             password_hash,
         )
-            .execute(pool)
-            .await
-            .expect("Failed to store test user.");
+        .execute(pool)
+        .await
+        .expect("Failed to store test user.");
     }
 }
 pub fn assert_is_redirect_to(response: &reqwest::Response, location: &str) {
