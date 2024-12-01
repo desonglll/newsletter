@@ -1,23 +1,11 @@
-use actix_session::Session;
-
 use crate::session_state::TypedSession;
+use crate::utils::e500;
 use actix_web::http::header::LOCATION;
 use actix_web::{http::header::ContentType, web, HttpResponse};
 use anyhow::Context;
 use sqlx::PgPool;
 use uuid::Uuid;
 
-pub fn e500<T>(e: T) -> actix_web::Error
-where
-    T: std::fmt::Debug + std::fmt::Display + 'static,
-{
-    actix_web::error::ErrorInternalServerError(e)
-}
-pub fn see_other(location: &str) -> HttpResponse {
-    HttpResponse::SeeOther()
-        .insert_header((LOCATION, location))
-        .finish()
-}
 pub async fn admin_dashboard(
     session: TypedSession,
     pool: web::Data<PgPool>,
